@@ -23,7 +23,7 @@ function buildLineContainer() {
   return lineContainer;
 }
 
-function dimension() {
+function getDimension() {
   const body = document.body,
     html = document.documentElement;
 
@@ -45,16 +45,22 @@ function dimension() {
   return { width, height };
 }
 
-function buildGrid(container, dimension, cellSize = 10, tick) {
+function buildGrid({
+  container,
+  dimension,
+  tick,
+  cellSize = 10,
+  color = { alive: "green", dead: "lightgrey" },
+}) {
   const numberOfLine = dimension.width / cellSize;
   const numberOfColumn = dimension.height / cellSize;
-  for (let indexLine = 0; indexLine < numberOfLine; indexLine++) {
+  for (let indexLine = 0; indexLine < numberOfColumn; indexLine++) {
     const lineContainer = buildLineContainer();
-    for (let indexColumn = 0; indexColumn < numberOfColumn; indexColumn++) {
+    for (let indexColumn = 0; indexColumn < numberOfLine; indexColumn++) {
       lineContainer.appendChild(
         buildCell(
           cellSize,
-          (indexLine + indexColumn + tick) % 2 === 0 ? "yellow" : "pink"
+          (indexLine + indexColumn + tick) % 2 === 0 ? color.alive : color.dead
         )
       );
     }
@@ -63,22 +69,22 @@ function buildGrid(container, dimension, cellSize = 10, tick) {
   return container;
 }
 
-function start() {
+function render(body, cellSize = 10) {
   let child = null;
-  setInterval(function () {
+  return () => {
     const tick = new Date().getSeconds();
-    const cellSize = 10;
     const container = buildContainer();
+    const dimension = getDimension();
     if (child) {
-      document.body.removeChild(child);
+      body.removeChild(child);
     }
-    child = buildGrid(container, dimension(), cellSize, tick);
-    document.body.appendChild(child);
-  }, 1000);
+    child = buildGrid({ container, dimension, cellSize, tick });
+    body.appendChild(child);
+  };
 }
 
-function init() {
-  start();
+function start(timeout = 1000) {
+  setInterval(render(document.body), timeout);
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", start);
