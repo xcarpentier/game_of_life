@@ -1,5 +1,9 @@
+function buildDiv() {
+  return document.createElement("div");
+}
+
 function buildCell(size = 10, color = "red") {
-  const square = document.createElement("div");
+  const square = buildDiv();
   square.style.background = color;
   square.style.width = `${size}px`;
   square.style.height = `${size}px`;
@@ -9,7 +13,7 @@ function buildCell(size = 10, color = "red") {
 }
 
 function buildContainer() {
-  const container = document.createElement("div");
+  const container = buildDiv();
   container.style.width = "100%";
   container.style.height = "100%";
   container.style.margin = "auto";
@@ -17,7 +21,7 @@ function buildContainer() {
 }
 
 function buildLineContainer() {
-  const lineContainer = document.createElement("div");
+  const lineContainer = buildDiv();
   lineContainer.style.display = "flex";
   lineContainer.style.flexDirection = "row";
   return lineContainer;
@@ -47,20 +51,23 @@ function getDimension() {
 
 function buildGrid({
   container,
-  dimension,
-  tick,
   cellSize = 10,
   color = { alive: "green", dead: "lightgrey" },
+  state
 }) {
-  const numberOfLine = dimension.width / cellSize;
-  const numberOfColumn = dimension.height / cellSize;
-  for (let indexLine = 0; indexLine < numberOfColumn; indexLine++) {
+  const numberOfCellPerLine = state[0].length;
+  const numberOfCellPerColumn = state.length;
+  for (let indexLine = 0; indexLine < numberOfCellPerColumn; indexLine++) {
     const lineContainer = buildLineContainer();
-    for (let indexColumn = 0; indexColumn < numberOfLine; indexColumn++) {
+    for (
+      let indexColumn = 0;
+      indexColumn < numberOfCellPerLine;
+      indexColumn++
+    ) {
       lineContainer.appendChild(
         buildCell(
           cellSize,
-          (indexLine + indexColumn + tick) % 2 === 0 ? color.alive : color.dead
+          state[indexLine][indexColumn] ? color.alive : color.dead
         )
       );
     }
@@ -69,17 +76,39 @@ function buildGrid({
   return container;
 }
 
+function getState({ dimension, cellSize, tick }) {
+  const numberOfCellPerLine = dimension.width / cellSize;
+  const numberOfCellPerColumn = dimension.height / cellSize;
+  const result = [];
+  for (let indexLine = 0; indexLine < numberOfCellPerColumn; indexLine++) {
+    const line = [];
+    for (
+      let indexColumn = 0;
+      indexColumn < numberOfCellPerLine;
+      indexColumn++
+    ) {
+      const isAlive = (indexLine + indexColumn + tick) % 2 === 0;
+      line.push(isAlive);
+    }
+    result.push(line);
+  }
+  return result;
+}
+
 function render(body, cellSize = 10) {
-  let child = null;
+  let grid = null;
+  let state = null;
   return () => {
     const tick = new Date().getSeconds();
     const container = buildContainer();
     const dimension = getDimension();
-    if (child) {
-      body.removeChild(child);
+    if (grid) {
+      body.removeChild(grid);
     }
-    child = buildGrid({ container, dimension, cellSize, tick });
-    body.appendChild(child);
+    state = getState({ dimension, cellSize, tick });
+    grid = buildGrid({ container, cellSize, state });
+
+    body.appendChild(grid);
   };
 }
 
