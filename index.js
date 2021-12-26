@@ -5,10 +5,12 @@ function buildDiv() {
 function buildCell(size = 10, color = "red") {
   const square = buildDiv();
   square.style.background = color;
+  square.style.opacity = "50%";
   square.style.width = `${size}px`;
   square.style.height = `${size}px`;
-  square.style.borderWidth = "3px";
-  square.style.borderColor = "white";
+  // square.style.border = "solid";
+  // square.style.borderWidth = "thin";
+  // square.style.borderColor = "red";
   return square;
 }
 
@@ -87,6 +89,7 @@ function getState({ dimension, cellSize, tick }) {
       indexColumn < numberOfCellPerLine;
       indexColumn++
     ) {
+      // TODO: https://fr.wikipedia.org/wiki/Jeu_de_la_vie
       const isAlive = (indexLine + indexColumn + tick) % 2 === 0;
       line.push(isAlive);
     }
@@ -98,12 +101,15 @@ function getState({ dimension, cellSize, tick }) {
 function render(body, cellSize = 10) {
   let grid = null;
   let state = null;
+  const dimension = getDimension();
   return () => {
     const tick = new Date().getSeconds();
     const container = buildContainer();
-    const dimension = getDimension();
     if (grid) {
       body.removeChild(grid);
+    }
+    if (state) {
+      state = null;
     }
     state = getState({ dimension, cellSize, tick });
     grid = buildGrid({ container, cellSize, state });
